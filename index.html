@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prolog Класификация на играчи с GIF</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 700px;
+      margin: 30px auto;
+      background: #f9f9f9;
+      color: #333;
+      padding: 20px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #005f99;
+      margin-bottom: 10px;
+    }
+
+    textarea {
+      width: 90%;
+      max-width: 600px;
+      height: 120px;
+      font-family: monospace;
+      font-size: 16px;
+      margin-top: 10px;
+      border-radius: 6px;
+      border: 2px solid #007acc;
+      padding: 8px;
+      resize: vertical;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px 25px;
+      font-size: 18px;
+      background-color: #007acc;
+      border: none;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #005f99;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #004a99;
+      min-height: 30px;
+    }
+
+    .animal-container {
+      margin-top: 30px;
+      min-height: 160px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #d0e8ff;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #a0c4ff;
+    }
+
+    .animal-gif {
+      max-width: 180px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #005f99;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Prolog Класификация на футболни играчи с GIF</h1>
+
+  <textarea id="prolog-input">% Примери на заявки:
+is_striker(X).
+is_difender(X).
+is_midfilder(X).
+is_goalkeeper(X).</textarea><br />
+
+  <button onclick="runProlog()">Изпълни</button>
+
+  <div id="result"></div>
+  <div class="animal-container" id="animal-animation"></div>
+
+  <script src="https://unpkg.com/tau-prolog"></script>
+  <script>
+    const session = pl.create();
+
+    const knowledge = `
+player(striker).
+player(difender).
+player(midfilder).
+player(goalkeeper).
+
+striker(ronaldo).
+difender(ramos).
+midfilder(toni_kros).
+goalkeeper(navas).
+
+is_striker(X) :- striker(X).
+is_difender(X) :- difender(X).
+is_midfilder(X) :- midfilder(X).
+is_goalkeeper(X) :- goalkeeper(X).
+    `;
+
+    session.consult(knowledge);
+
+    const playerGIFs = {
+      ronaldo: '<img class="animal-gif" src="https://media.giphy.com/media/r1IMdmkhUcpzy/giphy.gif" alt="Ronaldo GIF" />',
+      ramos: '<img class="animal-gif" src="https://media.giphy.com/media/nABdwGkMvBdkI/giphy.gif" alt="Ramos GIF" />',
+      toni_kros: '<img class="animal-gif" src="https://media.giphy.com/media/2eKfbGXthki1fcg625/giphy.gif" alt="Toni Kroos GIF" />',
+      navas: '<img class="animal-gif" src="https://media.giphy.com/media/rF6Jfh8h7oUFQyCKE9/giphy.gif" alt="Navas GIF" />'
+    };
+
+    function runProlog() {
+      const input = document.getElementById("prolog-input").value.trim();
+      const resultDiv = document.getElementById("result");
+      const animDiv = document.getElementById("animal-animation");
+
+      resultDiv.innerHTML = "";
+      animDiv.innerHTML = "";
+
+      try {
+        session.query(input);
+        session.answers(answer => {
+          if (answer === false) {
+            resultDiv.innerHTML += "<p>Няма повече резултати.</p>";
+            return;
+          }
+          const str = pl.format_answer(answer);
+          if (str === "false.") {
+            resultDiv.innerHTML = "<p>Няма резултати за тази заявка.</p>";
+            return;
+          }
+          resultDiv.innerHTML += `<p>${str}</p>`;
+
+          const match = str.match(/X = (\w+)/);
+          if (match) {
+            const player = match[1];
+            animDiv.innerHTML = playerGIFs[player] || "<p>Няма GIF за този играч.</p>";
+          }
+        });
+      } catch (e) {
+        resultDiv.innerHTML = "<p>Грешка при изпълнение на заявката.</p>";
+      }
+    }
+  </script>
+
+</body>
+</html>
